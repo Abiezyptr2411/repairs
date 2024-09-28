@@ -365,7 +365,7 @@
 
     <script>
         const token = 'YOUR_ACCESS_TOKEN';
-        axios.get('<?= site_url('auth/get_users') ?>', {
+        axios.get('<?= site_url('api/get_users') ?>', {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
