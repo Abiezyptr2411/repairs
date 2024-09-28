@@ -394,7 +394,7 @@
 
         document.getElementById('logout-button').addEventListener('click', function() {
             const token = 'YOUR_ACCESS_TOKEN';
-            axios.post('<?= site_url('auth/logout') ?>', {}, {
+            axios.post('<?= site_url('api/logout') ?>', {}, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
