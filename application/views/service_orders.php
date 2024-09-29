@@ -197,7 +197,7 @@
                     <h4 style="font-size: 12px; margin: 0; font-weight: bold;">Lokasi Bengkel</h4>
                     <select id="lokasi-ahass" name="lokasi-ahass" class="form-control mt-2">
                         <option value="Cabang Pamulang (02791)">Cabang Pamulang (02791)</option>
-                        <option value="Cabang Bintaro (02791)">Cabang Bintaro (02791)</option>
+                        <option value="Cabang Bintaro (02792)">Cabang Bintaro (02792)</option>
                     </select>
                 </div>
 
