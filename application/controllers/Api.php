@@ -373,6 +373,53 @@ class Api extends CI_Controller
         ], ApiResponseStatus::HTTP_OK);
     }
 
+    public function get_all_orders()
+    {
+        // Fetch all orders
+        $orders = $this->Service_model->get_all_orders();
+
+        if (!empty($orders)) {
+            $this->response([
+                'status' => ApiResponseStatus::SUCCESS,
+                'data' => $orders
+            ], ApiResponseStatus::HTTP_OK);
+        } else {
+            $this->response([
+                'status' => ApiResponseStatus::ERROR,
+                'message' => 'No orders found.'
+            ], ApiResponseStatus::HTTP_NOT_FOUND);
+        }
+    }
+
+    public function get_orders_by_user_id()
+    {
+        $user_id = $this->session->userdata('id');
+
+        // Check if the user is logged in
+        if (empty($user_id)) {
+            $this->response([
+                'status' => ApiResponseStatus::ERROR,
+                'message' => 'Unauthorized: Please log in to continue.'
+            ], ApiResponseStatus::HTTP_UNAUTHORIZED);
+            return;
+        }
+
+        // Fetch orders by user_id
+        $orders = $this->Service_model->get_orders_by_user_id($user_id);
+
+        if (!empty($orders)) {
+            $this->response([
+                'status' => ApiResponseStatus::SUCCESS,
+                'data' => $orders
+            ], ApiResponseStatus::HTTP_OK);
+        } else {
+            $this->response([
+                'status' => ApiResponseStatus::ERROR,
+                'message' => 'No orders found for this user.'
+            ], ApiResponseStatus::HTTP_NOT_FOUND);
+        }
+    }
+
     public function create_service_order()
     {
         $user_id = $this->session->userdata('id');
@@ -405,7 +452,7 @@ class Api extends CI_Controller
 
         $order_data = [
             'user_id' => $user_id,
-            'service_location' => $service_location,
+            'service_location' => 'Bengkel',
             'ahass_location' => $ahass_location,
             'schedule' => $schedule,
             'service_type' => $service_type,

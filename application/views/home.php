@@ -200,7 +200,7 @@
 
                 <!-- Delivery -->
                 <div class="col-3 col-md-6 mb-3">
-                    <a href="<?= site_url('delivery') ?>" style="text-decoration: none;">
+                    <a href="<?= site_url('ServiceOrders') ?>" style="text-decoration: none;">
                         <div class="text-center">
                             <img src="https://cdn3.iconfinder.com/data/icons/online-business-39/313/Flat_Blue-07-20-256.png" alt="Delivery Icon" class="menu-icon">
                             <h5 class="menu-title" style="color: gray; font-size: 0.9rem;">Servis</h5> <!-- Ukuran font diperbesar -->

@@ -20,5 +20,7 @@ $route['api/createProduct'] = 'api/create_product';
 $route['api/product/delete/(:any)'] = 'api/delete_product/$1';
 
 // Service Orders API Routing
+$route['api/get_orders'] = 'api/get_all_orders';
+$route['api/get_orders_users'] = 'api/get_orders_by_user_id';
 $route['api/create_service_orders'] = 'api/create_service_order';
 $route['api/product/delete/(:any)'] = 'api/delete_product/$1';
