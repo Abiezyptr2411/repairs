@@ -24,3 +24,9 @@ $route['api/get_orders'] = 'api/get_all_orders';
 $route['api/get_orders_users'] = 'api/get_orders_by_user_id';
 $route['api/create_service_orders'] = 'api/create_service_order';
 $route['api/product/delete/(:any)'] = 'api/delete_product/$1';
+
+// Products Orders API Routing
+// $route['api/get_orders_products'] = 'api/get_all_orders_products';
+$route['api/get_orders_product_users'] = 'api/get_orders_product_by_user_id';
+$route['api/create_service_orders'] = 'api/create_service_order';
+$route['api/product/delete/(:any)'] = 'api/delete_product/$1';

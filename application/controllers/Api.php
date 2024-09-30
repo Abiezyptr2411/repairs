@@ -13,6 +13,14 @@ class Api extends CI_Controller
         $this->load->library('session');
     }
 
+    private function response($data, $http_code)
+    {
+        $this->output
+            ->set_content_type('application/json')
+            ->set_status_header($http_code)
+            ->set_output(json_encode($data));
+    }
+
     public function login()
     {
         $json = $this->input->raw_input_stream;
@@ -441,6 +449,8 @@ class Api extends CI_Controller
         $schedule = isset($data['schedule']) ? trim($data['schedule']) : null;
         $service_type = isset($data['service_type']) ? trim($data['service_type']) : null;
         $complaint = isset($data['complaint']) ? trim($data['complaint']) : null;
+        $service_warranty = isset($data['service_warranty']) ? trim($data['service_warranty']) : null;
+        $price = isset($data['price']) ? trim($data['price']) : null;
 
         if (empty($service_location) || empty($schedule) || empty($service_type)) {
             $this->response([
@@ -457,6 +467,8 @@ class Api extends CI_Controller
             'schedule' => $schedule,
             'service_type' => $service_type,
             'complaint' => $complaint,
+            'service_warranty' => $service_warranty,
+            'price' => $price,
             'created_at' => date('Y-m-d H:i:s')
         ];
 
@@ -474,11 +486,30 @@ class Api extends CI_Controller
         }
     }
 
-    private function response($data, $http_code)
+    public function get_orders_product_by_user_id()
     {
-        $this->output
-            ->set_content_type('application/json')
-            ->set_status_header($http_code)
-            ->set_output(json_encode($data));
+        $user_id = $this->session->userdata('id');
+
+        if (empty($user_id)) {
+            $this->response([
+                'status' => ApiResponseStatus::ERROR,
+                'message' => 'Unauthorized: Please log in to continue.'
+            ], ApiResponseStatus::HTTP_UNAUTHORIZED);
+            return;
+        }
+
+        $orders = $this->Service_model->get_orders_product_by_user_id($user_id);
+
+        if (!empty($orders)) {
+            $this->response([
+                'status' => ApiResponseStatus::SUCCESS,
+                'data' => $orders
+            ], ApiResponseStatus::HTTP_OK);
+        } else {
+            $this->response([
+                'status' => ApiResponseStatus::ERROR,
+                'message' => 'No orders found for this user.'
+            ], ApiResponseStatus::HTTP_NOT_FOUND);
+        }
     }
 }

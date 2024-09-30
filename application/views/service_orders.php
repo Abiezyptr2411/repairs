@@ -11,7 +11,7 @@
     <link rel="manifest" href="../manifest.json" />
 
     <link rel="icon" href="./assets/images/logo/favicon.png" type="image/x-icon" />
-    <title>Repairs | Application</title>
+    <title>Repairs | Orders</title>
     <link rel="apple-touch-icon" href="./assets/images/logo/favicon.png" />
     <meta name="theme-color" content="#ff8d2f" />
     <meta name="apple-mobile-web-app-capable" content="yes" />

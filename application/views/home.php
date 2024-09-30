@@ -327,7 +327,7 @@
             </li>
 
             <li>
-                <a href="activity.html" class="icon" style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+                <a href="<?= site_url('orders') ?>" class="icon" style="display: flex; flex-direction: column; align-items: center; text-align: center;">
                     <i class="fa-solid fa-file-alt" style="font-size: 24px;"></i>
                     <span style="margin-top: 8px;">Pesanan</span>
                 </a>

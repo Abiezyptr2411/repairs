@@ -20,4 +20,17 @@ class Service_model extends CI_Model
     {
         return $this->db->insert('service_orders', $data);
     }
+
+    public function get_orders_product_by_user_id($user_id)
+    {
+        $this->db->select('product_orders.*, users.name as name_users, product_orders.user_id, products.name as product_name, products.description as product_description');
+        $this->db->from('product_orders');
+        $this->db->join('products', 'product_orders.product_id = products.id');
+        $this->db->join('users', 'product_orders.user_id = users.id');
+        $this->db->where('product_orders.user_id', $user_id);
+        $this->db->where('product_orders.deleted_at IS NULL');
+        $query = $this->db->get();
+
+        return $query->result_array();
+    }
 }
