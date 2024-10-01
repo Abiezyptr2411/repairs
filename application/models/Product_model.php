@@ -61,4 +61,25 @@ class Product_model extends CI_Model
         $this->db->where('id', $id);
         return $this->db->update('products', ['deleted_at' => date('Y-m-d H:i:s')]);
     }
+
+    public function insert_cart_item($user_id, $product_id, $quantity)
+    {
+        $data = [
+            'user_id' => $user_id,
+            'product_id' => $product_id,
+            'quantity' => $quantity
+        ];
+
+        return $this->db->insert('cart', $data);
+    }
+
+    public function update_cart_item($cart_id, $quantity)
+    {
+        return $this->db->update('cart', ['quantity' => $quantity], ['id' => $cart_id]);
+    }
+
+    public function get_cart_item($user_id, $product_id)
+    {
+        return $this->db->get_where('cart', ['user_id' => $user_id, 'product_id' => $product_id])->row();
+    }
 }

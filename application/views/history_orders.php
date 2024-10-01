@@ -109,7 +109,7 @@
                     <div class="col-12">
                         <div class="vertical-product-box order-box">
                             <div class="vertical-box-img">
-                                <img class="img-fluid img" src="https://cdn0.iconfinder.com/data/icons/internet-2076/256/web_maintenance.png" alt="Default Image" />
+                                <img class="img-fluid img" src="./assets/icons/report_16678541.gif" alt="Default Image" />
                             </div>
                             <div class="vertical-box-details">
                                 <div class="vertical-box-head">
@@ -156,7 +156,7 @@
                             <!-- Product Image Section -->
                             <div class="col-md-4">
                                 <div class="vertical-box-img position-relative">
-                                    <img class="img-fluid img rounded-start" src="https://cdn0.iconfinder.com/data/icons/internet-2076/256/web_maintenance.png" alt="Product Image" />
+                                    <img class="img-fluid img rounded-start" src="https://cdn0.iconfinder.com/data/icons/logos-brands-2/48/logo_brand_brands_logos_microsoft_store_windows-512.png" alt="Product Image" />
                                     <span class="badge position-absolute top-0 start-0 bg-secondary">${order.transaction_code}</span>
                                 </div>
                             </div>

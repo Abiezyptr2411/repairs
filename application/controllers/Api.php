@@ -9,6 +9,7 @@ class Api extends CI_Controller
         $this->load->model('User_model');
         $this->load->model('Product_model');
         $this->load->model('Service_model');
+        $this->load->model('Coupon_model');
         $this->load->library('ApiResponseStatus');
         $this->load->library('session');
     }
@@ -309,6 +310,50 @@ class Api extends CI_Controller
         }
     }
 
+    public function add_cart_item()
+    {
+        $input = json_decode(file_get_contents('php://input'), true);
+        // Ambil user_id dari sesi yang sedang login
+        $user_id = $this->session->userdata('id');
+
+        // Jika user_id tidak ada di sesi, berikan respons error
+        if (!$user_id) {
+            $response = [
+                'status' => 'error',
+                'message' => 'User not logged in'
+            ];
+            echo json_encode($response);
+            return;
+        }
+
+        // Periksa apakah input valid
+        if (!$input || !isset($input['product_id']) || !isset($input['quantity'])) {
+            $response = [
+                'status' => 'error',
+                'message' => 'Product ID or quantity is missing'
+            ];
+            echo json_encode($response);
+            return;
+        }
+
+        $product_id = $input['product_id'];
+        $quantity = $input['quantity'];
+
+        $result = $this->Product_model->insert_cart_item($user_id, $product_id, $quantity);
+
+        if ($result) {
+            $this->response([
+                'status' => ApiResponseStatus::SUCCESS,
+                'message' => 'Cart updated successfully.'
+            ], ApiResponseStatus::HTTP_OK);
+        } else {
+            $this->response([
+                'status' => ApiResponseStatus::ERROR,
+                'message' => 'Failed to update product cart.'
+            ], ApiResponseStatus::HTTP_BAD_REQUEST);
+        }
+    }
+
     public function edit_product($id)
     {
         $json = $this->input->raw_input_stream;
@@ -510,6 +555,220 @@ class Api extends CI_Controller
                 'status' => ApiResponseStatus::ERROR,
                 'message' => 'No orders found for this user.'
             ], ApiResponseStatus::HTTP_NOT_FOUND);
+        }
+    }
+
+    public function get_coupons()
+    {
+        $coupons = $this->Coupon_model->get_all_active_coupons();
+
+        if (!empty($coupons)) {
+            $this->response([
+                'status' => ApiResponseStatus::SUCCESS,
+                'data' => $coupons
+            ], ApiResponseStatus::HTTP_OK);
+        } else {
+            $this->response([
+                'status' => ApiResponseStatus::ERROR,
+                'message' => 'No coupons found.'
+            ], ApiResponseStatus::HTTP_NOT_FOUND);
+        }
+    }
+
+    public function get_coupons_by_user_id($user_id)
+    {
+        if (empty($user_id)) {
+            $this->response([
+                'status' => ApiResponseStatus::ERROR,
+                'message' => 'User ID is required.'
+            ], ApiResponseStatus::HTTP_BAD_REQUEST);
+            return;
+        }
+
+        $coupons = $this->Coupon_model->get_coupons_by_user_id($user_id);
+
+        if (!empty($coupons)) {
+            $this->response([
+                'status' => ApiResponseStatus::SUCCESS,
+                'data' => $coupons
+            ], ApiResponseStatus::HTTP_OK);
+        } else {
+            $this->response([
+                'status' => ApiResponseStatus::ERROR,
+                'message' => 'No coupons found for the given user.'
+            ], ApiResponseStatus::HTTP_NOT_FOUND);
+        }
+    }
+
+    public function create_coupon()
+    {
+        $json = $this->input->raw_input_stream;
+        $data = json_decode($json, true);
+
+        $coupon_code = isset($data['coupon_code']) ? trim($data['coupon_code']) : null;
+        $description = isset($data['description']) ? trim($data['description']) : null;
+        $discount_type = isset($data['discount_type']) ? trim($data['discount_type']) : null;
+        $discount_value = isset($data['discount_value']) ? floatval($data['discount_value']) : null;
+        $max_discount_value = isset($data['max_discount_value']) ? floatval($data['max_discount_value']) : null;
+        $min_purchase_value = isset($data['min_purchase_value']) ? floatval($data['min_purchase_value']) : null;
+        $usage_limit = isset($data['usage_limit']) ? intval($data['usage_limit']) : 1;
+        $valid_from = isset($data['valid_from']) ? $data['valid_from'] : null;
+        $valid_until = isset($data['valid_until']) ? $data['valid_until'] : null;
+        $status = isset($data['status']) ? $data['status'] : 'active';
+
+        // Menerima array user_ids (bisa berupa array atau null)
+        $user_ids = isset($data['user_ids']) ? $data['user_ids'] : null;
+
+        // Validasi input kupon
+        if (empty($coupon_code) || empty($discount_type) || empty($discount_value) || empty($valid_from) || empty($valid_until)) {
+            $this->response([
+                'status' => ApiResponseStatus::ERROR,
+                'message' => 'Coupon Code, Discount Type, Discount Value, Valid From, and Valid Until are required.'
+            ], ApiResponseStatus::HTTP_BAD_REQUEST);
+            return;
+        }
+
+        // Cek apakah kupon sudah ada
+        $existing_coupon = $this->Coupon_model->get_coupon_by_code($coupon_code);
+        if ($existing_coupon) {
+            $this->response([
+                'status' => ApiResponseStatus::ERROR,
+                'message' => 'Coupon Code already exists. Please use a different code.'
+            ], ApiResponseStatus::HTTP_CONFLICT);
+            return;
+        }
+
+        // Validasi tanggal
+        if (strtotime($valid_from) > strtotime($valid_until)) {
+            $this->response([
+                'status' => ApiResponseStatus::ERROR,
+                'message' => 'Valid From date cannot be later than Valid Until date.'
+            ], ApiResponseStatus::HTTP_BAD_REQUEST);
+            return;
+        }
+
+        // Validasi nilai diskon
+        if ($discount_value <= 0) {
+            $this->response([
+                'status' => ApiResponseStatus::ERROR,
+                'message' => 'Discount Value must be greater than zero.'
+            ], ApiResponseStatus::HTTP_BAD_REQUEST);
+            return;
+        }
+
+        $coupon_data = [
+            'coupon_code' => $coupon_code,
+            'description' => $description,
+            'discount_type' => $discount_type,
+            'discount_value' => $discount_value,
+            'max_discount_value' => $max_discount_value,
+            'min_purchase_value' => $min_purchase_value,
+            'usage_limit' => $usage_limit,
+            'valid_from' => $valid_from,
+            'valid_until' => $valid_until,
+            'status' => $status,
+            'created_at' => date('Y-m-d H:i:s')
+        ];
+
+        if (empty($user_ids)) {
+            $coupon_data['user_id'] = null;
+        } else {
+            foreach ($user_ids as $user_id) {
+                $coupon_data['user_id'] = $user_id;
+                $this->Coupon_model->create_coupon($coupon_data);
+            }
+
+            $this->response([
+                'status' => ApiResponseStatus::SUCCESS,
+                'message' => 'Coupon created successfully for selected users.',
+                'data' => $coupon_data
+            ], ApiResponseStatus::HTTP_OK);
+            return;
+        }
+
+        if ($this->Coupon_model->create_coupon($coupon_data)) {
+            $this->response([
+                'status' => ApiResponseStatus::SUCCESS,
+                'message' => 'Coupon created successfully for all users.',
+                'data' => $coupon_data
+            ], ApiResponseStatus::HTTP_OK);
+        } else {
+            $this->response([
+                'status' => ApiResponseStatus::ERROR,
+                'message' => 'Failed to create coupon.'
+            ], ApiResponseStatus::HTTP_BAD_REQUEST);
+        }
+    }
+
+    public function update_coupon($id)
+    {
+        $json = $this->input->raw_input_stream;
+        $data = json_decode($json, true);
+
+        $coupon = $this->Coupon_model->get_coupon_by_id($id);
+
+        if (empty($coupon)) {
+            $this->response([
+                'status' => ApiResponseStatus::ERROR,
+                'message' => 'Coupon not found.'
+            ], ApiResponseStatus::HTTP_NOT_FOUND);
+            return;
+        }
+
+        $update_data = [
+            'coupon_code' => isset($data['coupon_code']) ? trim($data['coupon_code']) : $coupon->coupon_code,
+            'description' => isset($data['description']) ? trim($data['description']) : $coupon->description,
+            'discount_type' => isset($data['discount_type']) ? trim($data['discount_type']) : $coupon->discount_type,
+            'discount_value' => isset($data['discount_value']) ? floatval($data['discount_value']) : $coupon->discount_value,
+            'max_discount' => isset($data['max_discount']) ? floatval($data['max_discount']) : $coupon->max_discount,
+            'min_purchase' => isset($data['min_purchase']) ? floatval($data['min_purchase']) : $coupon->min_purchase,
+            'usage_limit' => isset($data['usage_limit']) ? intval($data['usage_limit']) : $coupon->usage_limit,
+            'valid_from' => isset($data['valid_from']) ? $data['valid_from'] : $coupon->valid_from,
+            'valid_until' => isset($data['valid_until']) ? $data['valid_until'] : $coupon->valid_until,
+            'status' => isset($data['status']) ? $data['status'] : $coupon->status,
+            'updated_at' => date('Y-m-d H:i:s')
+        ];
+
+        if ($this->Coupon_model->update_coupon($id, $update_data)) {
+            $this->response([
+                'status' => ApiResponseStatus::SUCCESS,
+                'message' => 'Coupon updated successfully.',
+                'data' => $update_data
+            ], ApiResponseStatus::HTTP_OK);
+        } else {
+            $this->response([
+                'status' => ApiResponseStatus::ERROR,
+                'message' => 'Failed to update coupon.'
+            ], ApiResponseStatus::HTTP_BAD_REQUEST);
+        }
+    }
+
+    public function delete_coupon($id)
+    {
+        $coupon = $this->Coupon_model->get_coupon_by_id($id);
+
+        if (empty($coupon)) {
+            $this->response([
+                'status' => ApiResponseStatus::ERROR,
+                'message' => 'Coupon not found.'
+            ], ApiResponseStatus::HTTP_NOT_FOUND);
+            return;
+        }
+
+        $delete_data = [
+            'deleted_at' => date('Y-m-d H:i:s')
+        ];
+
+        if ($this->Coupon_model->soft_delete_coupon($id, $delete_data)) {
+            $this->response([
+                'status' => ApiResponseStatus::SUCCESS,
+                'message' => 'Coupon deleted successfully.'
+            ], ApiResponseStatus::HTTP_OK);
+        } else {
+            $this->response([
+                'status' => ApiResponseStatus::ERROR,
+                'message' => 'Failed to delete coupon.'
+            ], ApiResponseStatus::HTTP_BAD_REQUEST);
         }
     }
 }

@@ -9,29 +9,23 @@
     <meta name="keywords" content="zomo" />
     <meta name="author" content="zomo" />
     <link rel="manifest" href="../manifest.json" />
-
-    <link rel="icon" href="../assets/images/logo/favicon.png" type="image/x-icon" />
-    <title>zomo App</title>
-    <link rel="apple-touch-icon" href="../assets/images/logo/favicon.png" />
+    <link rel="icon" href="./assets/images/logo/favicon.png" type="image/x-icon" />
+    <title>Repairs | Orders History</title>
+    <link rel="apple-touch-icon" href="./assets/images/logo/favicon.png" />
     <meta name="theme-color" content="#ff8d2f" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
     <meta name="apple-mobile-web-app-title" content="zomo" />
-    <meta name="msapplication-TileImage" content="../assets/images/logo/favicon.png" />
+    <meta name="msapplication-TileImage" content="./assets/images/logo/favicon.png" />
     <meta name="msapplication-TileColor" content="#FFFFFF" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-
-    <!-- font link -->
-    <link rel="stylesheet" href="../assets/css/vendors/metropolis.min.css" />
-
-    <!-- remixicon css -->
-    <link rel="stylesheet" type="text/css" href="../assets/css/vendors/remixicon.css" />
-
-    <!-- bootstrap css -->
-    <link rel="stylesheet" id="rtl-link" type="text/css" href="../assets/css/vendors/bootstrap.min.css" />
-
-    <!-- Theme css -->
-    <link rel="stylesheet" id="change-link" type="text/css" href="../assets/css/style.css" />
+    <link rel="stylesheet" href="./assets/css/metropolis.min.css" />
+    <link rel="stylesheet" type="text/css" href="./assets/css/remixicon.css" />
+    <link rel="stylesheet" type="text/css" href="./assets/css/swiper-bundle.min.css" />
+    <link rel="stylesheet" id="rtl-link" type="text/css" href="./assets/css/bootstrap.min.css" />
+    <link rel="stylesheet" id="change-link" type="text/css" href="./assets/css/style.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 
 <body>
@@ -39,10 +33,10 @@
     <header class="section-t-space">
         <div class="custom-container">
             <div class="header-panel">
-                <a href="cart.html">
-                    <i class="ri-arrow-left-s-line"></i>
+                <a href="<?= site_url('home') ?>">
+                    <i class="fa-solid fa-arrow-left" style="font-size: 20px;"></i>
                 </a>
-                <h2>Apply Coupon</h2>
+                <h2>Kupon Tersedia</h2>
             </div>
         </div>
     </header>
@@ -55,7 +49,7 @@
                 <div class="form-group">
                     <div class="form-input w-100">
                         <input type="search" class="form-control search" id="inputusername" placeholder="Restaurant, item & more" />
-                        <i class="ri-search-line search-icon"></i>
+                        <i class="fa-solid fa-search" style="font-size: 20px;"></i>
                     </div>
                 </div>
             </form>
@@ -67,120 +61,100 @@
     <section class="section-lg-b-space">
         <div class="custom-container">
             <h3 class="mb-3 dark-text">Available Coupons</h3>
-            <div class="row gy-3">
-                <div class="col-12">
-                    <div class="coupon-box">
-                        <div class="coupon-discount color-1">20% OFF</div>
-                        <div class="coupon-details">
-                            <div class="coupon-content">
-                                <div class="coupon-name">
-                                    <img class="img-fluid coupon-img" src="../assets/images/icons/google-pay.png" alt="c1" />
-                                    <div>
-                                        <h5 class="fw-semibold dark-text">Google Pay</h5>
-                                        <h6 class="light-text mt-1">Use Gpay</h6>
-                                    </div>
-                                </div>
-                                <div class="coupon-code">
-                                    <h6 class="light-text">#GOOGLE20</h6>
-                                </div>
-                            </div>
-                            <p>Valid on order with items wroth $10 or more.<span>More Details</span></p>
-                            <div class="coupon-apply">
-                                <h6 class="unlock">Add item wroth $20 more to unlock</h6>
-                            </div>
-                        </div>
-                        <img class="img-fluid coupon-left" src="../assets/images/svg/coupon-left.svg" alt="right-border" />
-                        <img class="img-fluid coupon-right" src="../assets/images/svg/coupon-right.svg" alt="right-border" />
-                    </div>
-                </div>
-                <div class="col-12">
-                    <div class="coupon-box">
-                        <div class="coupon-discount color-2">20% OFF</div>
-                        <div class="coupon-details">
-                            <div class="coupon-content">
-                                <div class="coupon-name">
-                                    <img class="img-fluid coupon-img" src="../assets/images/icons/one-card.png" alt="c1" />
-                                    <div>
-                                        <h5 class="fw-semibold dark-text">OneCard</h5>
-                                        <h6 class="light-text mt-1">Use onecard</h6>
-                                    </div>
-                                </div>
-                                <div class="coupon-code">
-                                    <h6 class="light-text">#ONE1CARD</h6>
-                                </div>
-                            </div>
-                            <p>Valid on order with items wroth $10 or more.<span>More Details</span></p>
-                            <div class="coupon-apply">
-                                <h6 class="unlock">Add item wroth $20 more to unlock</h6>
-                                <a href="cart.html" class="theme-color fw-semibold">Apply</a>
-                            </div>
-                        </div>
-                        <img class="img-fluid coupon-left" src="../assets/images/svg/coupon-left.svg" alt="right-border" />
-                        <img class="img-fluid coupon-right" src="../assets/images/svg/coupon-right.svg" alt="right-border" />
-                    </div>
-                </div>
-                <div class="col-12">
-                    <div class="coupon-box">
-                        <div class="coupon-discount color-3">20% OFF</div>
-                        <div class="coupon-details">
-                            <div class="coupon-content">
-                                <div class="coupon-name">
-                                    <img class="img-fluid coupon-img" src="../assets/images/icons/citi-bank.png" alt="c1" />
-                                    <div>
-                                        <h5 class="fw-semibold dark-text">Citi Bank</h5>
-                                        <h6 class="light-text mt-1">Use citibank card</h6>
-                                    </div>
-                                </div>
-                                <div class="coupon-code">
-                                    <h6 class="light-text">#CITI0012</h6>
-                                </div>
-                            </div>
-                            <p>Valid on order with items wroth $10 or more.<span>More Details</span></p>
-                            <div class="coupon-apply">
-                                <h6 class="unlock">Add item wroth $20 more to unlock</h6>
-                                <a href="cart.html" class="theme-color fw-semibold">Apply</a>
-                            </div>
-                        </div>
-                        <img class="img-fluid coupon-left" src="../assets/images/svg/coupon-left.svg" alt="right-border" />
-                        <img class="img-fluid coupon-right" src="../assets/images/svg/coupon-right.svg" alt="right-border" />
-                    </div>
-                </div>
-                <div class="col-12">
-                    <div class="coupon-box">
-                        <div class="coupon-discount color-4">20% OFF</div>
-                        <div class="coupon-details">
-                            <div class="coupon-content">
-                                <div class="coupon-name">
-                                    <img class="img-fluid coupon-img" src="../assets/images/icons/simpla.png" alt="c1" />
-                                    <div>
-                                        <h5 class="fw-semibold dark-text">Simpl</h5>
-                                        <h6 class="light-text mt-1">Use simpl</h6>
-                                    </div>
-                                </div>
-                                <div class="coupon-code">
-                                    <h6 class="light-text">#SIM100</h6>
-                                </div>
-                            </div>
-                            <p>Valid on order with items wroth $10 or more.<span>More Details</span></p>
-                            <div class="coupon-apply">
-                                <h6 class="unlock">Add item wroth $20 more to unlock</h6>
-                                <a href="cart.html" class="theme-color fw-semibold">Apply</a>
-                            </div>
-                        </div>
-                        <img class="img-fluid coupon-left" src="../assets/images/svg/coupon-left.svg" alt="right-border" />
-                        <img class="img-fluid coupon-right" src="../assets/images/svg/coupon-right.svg" alt="right-border" />
-                    </div>
-                </div>
-            </div>
+            <div id="coupon-list" class="row gy-3"></div>
         </div>
     </section>
-    <!-- coupon section start -->
 
-    <!-- bootstrap js -->
-    <script src="../assets/js/bootstrap.bundle.min.js"></script>
+    <!-- Add your scripts below -->
+    <script src="./assets/js/swiper-bundle.min.js"></script>
+    <script src="./assets/js/custom-swiper.js"></script>
+    <script src="./assets/js/bootstrap.bundle.min.js"></script>
+    <script src="./assets/js/script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <!-- script js -->
-    <script src="../assets/js/script.js"></script>
+    <script>
+        const token = 'YOUR_ACCESS_TOKEN';
+
+        axios.get('<?= site_url('api/get_coupons') ?>', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => {
+                const coupons = response.data.data;
+                renderCoupons(coupons);
+            })
+            .catch(error => {
+                console.error('Error fetching coupon data:', error);
+                Swal.fire('Error', 'Failed to load coupons', 'error');
+            });
+
+        // Function to dynamically render coupons on the page
+        function renderCoupons(coupons) {
+            const couponList = document.getElementById('coupon-list');
+
+            if (coupons.length === 0) {
+                couponList.innerHTML = '<p>No available coupons at the moment.</p>';
+                return;
+            }
+
+            coupons.forEach(coupon => {
+                // Format Discount Display
+                let discountDisplay;
+                if (coupon.discount_type === 'percentage') {
+                    discountDisplay = `${coupon.discount_value}% OFF`;
+                } else if (coupon.discount_type === 'fixed') {
+                    discountDisplay = `Rp ${coupon.discount_value.toLocaleString('id-ID')}`;
+                }
+
+                // Format Discount Type Display
+                let typediscountDisplay;
+                if (coupon.discount_type === 'percentage') {
+                    typediscountDisplay = `Percentage %`;
+                } else if (coupon.discount_type === 'fixed') {
+                    typediscountDisplay = `Amount`;
+                }
+
+                // Format Date for valid_from and valid_until
+                const options = {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                };
+                const validFromFormatted = new Date(coupon.valid_from).toLocaleDateString('id-ID', options);
+                const validUntilFormatted = new Date(coupon.valid_until).toLocaleDateString('id-ID', options);
+
+                // Coupon Box
+                const couponBox = `
+                <div class="col-12">
+                    <div class="coupon-box">
+                        <div class="coupon-discount color-2">${typediscountDisplay}</div>
+                        <div class="coupon-details">
+                            <div class="coupon-content">
+                                <div class="coupon-name">
+                                    <div>
+                                        <h5 class="fw-semibold dark-text">${coupon.coupon_code}</h5>
+                                        <h6 class="light-text mt-1">${coupon.description}</h6>
+                                    </div>
+                                </div>
+                                <div class="coupon-code">
+                                    <h4 class="light-text"><b>${discountDisplay}</b></h4>
+                                </div>
+                            </div>
+                            <div class="coupon-apply">
+                                <h6 class="unlock">${validFromFormatted} <b>s/d</b> ${validUntilFormatted}</h6>
+                                              <a href="cart.html" class="theme-color fw-semibold">Apply</a>
+                            </div>
+                        </div>
+                          <img class="img-fluid coupon-left" src="<?= base_url('assets') ?>/images/coupon-left.svg" alt="right-border" />
+                    </div>
+                </div>
+            `;
+                couponList.innerHTML += couponBox;
+            });
+        }
+    </script>
 </body>
 
 </html>

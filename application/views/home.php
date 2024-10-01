@@ -182,58 +182,51 @@
             </div>
         </div>
     </section>
-    <!-- Restaurant details section end -->
-
 
     <section class="section-t-space">
         <div class="custom-container">
             <div class="row mt-3">
-                <!-- Pick Up -->
                 <div class="col-3 col-md-6 mb-3">
                     <a href="<?= site_url('product') ?>" style="text-decoration: none;">
                         <div class="text-center">
                             <img src="https://cdn3.iconfinder.com/data/icons/business-and-finance-312/387/Flat_Blue-11-09-256.png" alt="Pick Up Icon" class="menu-icon">
-                            <h5 class="menu-title" style="color: gray; font-size: 0.9rem;">Produk</h5> <!-- Ukuran font diperbesar -->
+                            <h5 class="menu-title" style="color: gray; font-size: 0.9rem;">Produk</h5>
                         </div>
                     </a>
                 </div>
 
-                <!-- Delivery -->
                 <div class="col-3 col-md-6 mb-3">
                     <a href="<?= site_url('ServiceOrders') ?>" style="text-decoration: none;">
                         <div class="text-center">
                             <img src="https://cdn3.iconfinder.com/data/icons/online-business-39/313/Flat_Blue-07-20-256.png" alt="Delivery Icon" class="menu-icon">
-                            <h5 class="menu-title" style="color: gray; font-size: 0.9rem;">Servis</h5> <!-- Ukuran font diperbesar -->
+                            <h5 class="menu-title" style="color: gray; font-size: 0.9rem;">Servis</h5>
                         </div>
                     </a>
                 </div>
 
-                <!-- Another Delivery (sepertinya ini duplikat) -->
                 <div class="col-3 col-md-6 mb-3">
-                    <a href="<?= site_url('delivery') ?>" style="text-decoration: none;">
+                    <a href="<?= site_url('news') ?>" style="text-decoration: none;">
                         <div class="text-center">
                             <img src="https://cdn3.iconfinder.com/data/icons/online-business-39/310/Flat_Blue-07-12-256.png" alt="Delivery Icon" class="menu-icon">
-                            <h5 class="menu-title" style="color: gray; font-size: 0.9rem;">Berita</h5> <!-- Ukuran font diperbesar -->
+                            <h5 class="menu-title" style="color: gray; font-size: 0.9rem;">Berita</h5>
                         </div>
                     </a>
                 </div>
 
-                <!-- Another Delivery (sepertinya ini duplikat) -->
                 <div class="col-3 col-md-6 mb-3">
-                    <a href="<?= site_url('delivery') ?>" style="text-decoration: none;">
+                    <a href="<?= site_url('promotion') ?>" style="text-decoration: none;">
                         <div class="text-center">
                             <img src="https://cdn3.iconfinder.com/data/icons/online-business-39/315/Flat_Blue-07-22-256.png" alt="Delivery Icon" class="menu-icon">
-                            <h5 class="menu-title" style="color: gray; font-size: 0.9rem;">Promo</h5> <!-- Ukuran font diperbesar -->
+                            <h5 class="menu-title" style="color: gray; font-size: 0.9rem;">Promo</h5>
                         </div>
                     </a>
                 </div>
 
-                <!-- Another Delivery (sepertinya ini duplikat) -->
                 <div class="col-3 col-md-6 mb-3 mt-4">
-                    <a href="<?= site_url('delivery') ?>" style="text-decoration: none;">
+                    <a href="<?= site_url('others') ?>" style="text-decoration: none;">
                         <div class="text-center">
                             <img src="https://cdn0.iconfinder.com/data/icons/online-business-and-internet-services/373/Flat_Blue-13-18-256.png" alt="Delivery Icon" class="menu-icon">
-                            <h5 class="menu-title" style="color: gray; font-size: 0.9rem;">Lainnya</h5> <!-- Ukuran font diperbesar -->
+                            <h5 class="menu-title" style="color: gray; font-size: 0.9rem;">Lainnya</h5>
                         </div>
                     </a>
                 </div>
