@@ -23,7 +23,6 @@ class Product_model extends CI_Model
     public function get_products_category_oil()
     {
         $this->db->where('deleted_at', NULL);
-        $this->db->where('category', 'OIL');
         $query = $this->db->get('products');
         return $query->result_array();
     }
@@ -64,13 +63,21 @@ class Product_model extends CI_Model
 
     public function insert_cart_item($user_id, $product_id, $quantity)
     {
-        $data = [
-            'user_id' => $user_id,
-            'product_id' => $product_id,
-            'quantity' => $quantity
-        ];
+        $this->db->where('user_id', $user_id);
+        $this->db->where('product_id', $product_id);
+        $query = $this->db->get('cart');
 
-        return $this->db->insert('cart', $data);
+        if ($query->num_rows() > 0) {
+            $existingItem = $query->row();
+            return $this->update_cart_item($existingItem->id, $quantity);
+        } else {
+            $data = [
+                'user_id' => $user_id,
+                'product_id' => $product_id,
+                'quantity' => $quantity
+            ];
+            return $this->db->insert('cart', $data);
+        }
     }
 
     public function update_cart_item($cart_id, $quantity)
@@ -78,8 +85,19 @@ class Product_model extends CI_Model
         return $this->db->update('cart', ['quantity' => $quantity], ['id' => $cart_id]);
     }
 
-    public function get_cart_item($user_id, $product_id)
+    public function get_cart_items($user_id)
     {
-        return $this->db->get_where('cart', ['user_id' => $user_id, 'product_id' => $product_id])->row();
+        $this->db->select('c.product_id, c.quantity, p.product_code, p.name, p.price, p.image_url');
+        $this->db->from('cart c');
+        $this->db->join('products p', 'c.product_id = p.id');
+        $this->db->where('c.user_id', $user_id);
+        return $this->db->get()->result();
+    }
+
+    public function delete_cart_item($user_id, $product_id)
+    {
+        $this->db->where('user_id', $user_id);
+        $this->db->where('product_id', $product_id);
+        return $this->db->delete('cart');
     }
 }

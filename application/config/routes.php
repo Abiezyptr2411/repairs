@@ -20,9 +20,10 @@ $route['api/product/delete/(:any)'] = 'api/delete_product/$1';
 
 // Cart API Routing
 $route['api/add_to_cart'] = 'api/add_cart_item';
-$route['api/get_cart'] = 'api/get_cart';
+$route['api/get_cart'] = 'api/get_cart_items';
+$route['api/checkout'] = 'api/save_order';
 $route['api/update/(:any)'] = 'api/update_cart/$1';
-$route['api/delete/(:any)'] = 'api/delete_cart_item/$1';
+$route['api/delete_cart_item/(:any)'] = 'api/remove_cart_item/$1';
 
 // Service Orders API Routing
 $route['api/get_orders'] = 'api/get_all_orders';

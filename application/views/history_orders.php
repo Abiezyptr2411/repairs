@@ -100,37 +100,63 @@
         const apiURLService = 'http://localhost/zomo/api/get_orders_by_user_id';
         const apiURLProduct = 'http://localhost/zomo/api/get_orders_product_users';
 
+        function displayEmptyServiceOrders() {
+            const serviceContainer = document.getElementById('services-content');
+            serviceContainer.innerHTML = `
+                <div class="custom-container">
+                    <div class="empty-tab">
+                        <img class="img-fluid empty-cart w-100" src="<?= base_url('assets/images/empty.svg') ?>" alt="empty-cart" />
+                          <h2>Pesanan kamu masih kosong</h2>
+                        <h5 class="mt-3">Silahkan pesan untuk kebutuhan kamu sekarang.</h5>
+                    </div>
+                </div>
+            `;
+        }
+
+        function displayEmptyProductOrders() {
+            const productContainer = document.getElementById('products-content');
+            productContainer.innerHTML = `
+                <div class="custom-container">
+                    <div class="empty-tab">
+                        <img class="img-fluid empty-cart w-100" src="<?= base_url('assets/images/empty.svg') ?>" alt="empty-cart" />
+                        <h2>Pesanan kamu masih kosong</h2>
+                        <h5 class="mt-3">Silahkan pesan untuk kebutuhan kamu sekarang.</h5>
+                    </div>
+                </div>
+            `;
+        }
+
         function displayServiceOrders(serviceOrders) {
             const serviceContainer = document.getElementById('services-content');
             serviceContainer.innerHTML = '';
 
             serviceOrders.forEach(order => {
                 const serviceHTML = `
-                    <div class="col-12">
-                        <div class="vertical-product-box order-box">
-                            <div class="vertical-box-img">
-                                <img class="img-fluid img" src="./assets/icons/report_16678541.gif" alt="Default Image" />
+                <div class="col-12">
+                    <div class="vertical-product-box order-box">
+                        <div class="vertical-box-img">
+                            <img class="img-fluid img" src="./assets/icons/report_16678541.gif" alt="Default Image" />
+                        </div>
+                        <div class="vertical-box-details">
+                            <div class="vertical-box-head">
+                                <div class="restaurant">
+                                    <h5 class="dark-text">${order.ahass_location}</h5>
+                                    <h5 class="theme-color">${order.service_type}</h5>
+                                </div>
+                                <h6 class="food-items mb-2">${order.complaint}</h6>
                             </div>
-                            <div class="vertical-box-details">
-                                <div class="vertical-box-head">
-                                    <div class="restaurant">
-                                        <h5 class="dark-text">${order.ahass_location}</h5>
-                                        <h5 class="theme-color">${order.service_type}</h5>
-                                    </div>
-                                    <h6 class="food-items mb-2">${order.complaint}</h6>
-                                </div>
-                                <div class="reorder">
-                                    <h6 class="rating-star">
-                                        <ul class="timing">
-                                            <li><b>Jadwal</b>: ${new Date(order.created_at).toLocaleDateString()}</li> 
-                                        </ul>
-                                        <a href="#" class="btn theme-btn order mt-0" role="button">Reorder</a>
-                                    </h6>
-                                </div>
+                            <div class="reorder">
+                                <h6 class="rating-star">
+                                    <ul class="timing">
+                                        <li><b>Jadwal</b>: ${new Date(order.created_at).toLocaleDateString()}</li> 
+                                    </ul>
+                                    <a href="#" class="btn theme-btn order mt-0" role="button">Reorder</a>
+                                </h6>
                             </div>
                         </div>
                     </div>
-                `;
+                </div>
+            `;
                 serviceContainer.innerHTML += serviceHTML;
             });
         }
@@ -191,8 +217,6 @@
             });
         }
 
-
-        // Function to fetch and display Service Orders
         async function fetchAndDisplayServiceOrders() {
             try {
                 const response = await fetch(apiURLService, {
@@ -207,6 +231,7 @@
                 if (result.status === 'success') {
                     displayServiceOrders(result.data);
                 } else {
+                    displayEmptyServiceOrders();
                     console.error('Failed to fetch service orders:', result.message);
                 }
             } catch (error) {
@@ -214,7 +239,6 @@
             }
         }
 
-        // Function to fetch and display Product Orders
         async function fetchAndDisplayProductOrders() {
             try {
                 const response = await fetch(apiURLProduct, {
@@ -229,6 +253,7 @@
                 if (result.status === 'success') {
                     displayProductOrders(result.data);
                 } else {
+                    displayEmptyProductOrders();
                     console.error('Failed to fetch product orders:', result.message);
                 }
             } catch (error) {
@@ -236,7 +261,6 @@
             }
         }
 
-        // Loader control
         const loader = document.getElementById('loader');
 
         function showLoader() {
@@ -272,6 +296,7 @@
         showLoader();
         fetchAndDisplayServiceOrders().then(hideLoader);
     </script>
+
 </body>
 
 </html>

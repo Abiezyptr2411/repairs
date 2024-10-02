@@ -83,24 +83,24 @@
             })
             .then(response => {
                 const coupons = response.data.data;
+
+                // check vouchers is available 
+                if (!coupons || coupons.length === 0) {
+                    displayEmpty();
+                    return;
+                }
+
                 renderCoupons(coupons);
             })
             .catch(error => {
                 console.error('Error fetching coupon data:', error);
-                Swal.fire('Error', 'Failed to load coupons', 'error');
+                displayEmpty();
             });
 
-        // Function to dynamically render coupons on the page
         function renderCoupons(coupons) {
             const couponList = document.getElementById('coupon-list');
 
-            if (coupons.length === 0) {
-                couponList.innerHTML = '<p>No available coupons at the moment.</p>';
-                return;
-            }
-
             coupons.forEach(coupon => {
-                // Format Discount Display
                 let discountDisplay;
                 if (coupon.discount_type === 'percentage') {
                     discountDisplay = `${coupon.discount_value}% OFF`;
@@ -108,7 +108,6 @@
                     discountDisplay = `Rp ${coupon.discount_value.toLocaleString('id-ID')}`;
                 }
 
-                // Format Discount Type Display
                 let typediscountDisplay;
                 if (coupon.discount_type === 'percentage') {
                     typediscountDisplay = `Percentage %`;
@@ -116,7 +115,6 @@
                     typediscountDisplay = `Amount`;
                 }
 
-                // Format Date for valid_from and valid_until
                 const options = {
                     year: 'numeric',
                     month: '2-digit',
@@ -125,36 +123,49 @@
                 const validFromFormatted = new Date(coupon.valid_from).toLocaleDateString('id-ID', options);
                 const validUntilFormatted = new Date(coupon.valid_until).toLocaleDateString('id-ID', options);
 
-                // Coupon Box
                 const couponBox = `
-                <div class="col-12">
-                    <div class="coupon-box">
-                        <div class="coupon-discount color-2">${typediscountDisplay}</div>
-                        <div class="coupon-details">
-                            <div class="coupon-content">
-                                <div class="coupon-name">
-                                    <div>
-                                        <h5 class="fw-semibold dark-text">${coupon.coupon_code}</h5>
-                                        <h6 class="light-text mt-1">${coupon.description}</h6>
+                    <div class="col-12">
+                        <div class="coupon-box">
+                            <div class="coupon-discount color-2">${typediscountDisplay}</div>
+                            <div class="coupon-details">
+                                <div class="coupon-content">
+                                    <div class="coupon-name">
+                                        <div>
+                                            <h5 class="fw-semibold dark-text">${coupon.coupon_code}</h5>
+                                            <h6 class="light-text mt-1">${coupon.description}</h6>
+                                        </div>
+                                    </div>
+                                    <div class="coupon-code">
+                                        <h4 class="light-text"><b>${discountDisplay}</b></h4>
                                     </div>
                                 </div>
-                                <div class="coupon-code">
-                                    <h4 class="light-text"><b>${discountDisplay}</b></h4>
+                                <div class="coupon-apply">
+                                    <h6 class="unlock">${validFromFormatted} <b>s/d</b> ${validUntilFormatted}</h6>
+                                    <a href="cart.html" class="theme-color fw-semibold">Apply</a>
                                 </div>
                             </div>
-                            <div class="coupon-apply">
-                                <h6 class="unlock">${validFromFormatted} <b>s/d</b> ${validUntilFormatted}</h6>
-                                              <a href="cart.html" class="theme-color fw-semibold">Apply</a>
-                            </div>
+                            <img class="img-fluid coupon-left" src="<?= base_url('assets') ?>/images/coupon-left.svg" alt="right-border" />
                         </div>
-                          <img class="img-fluid coupon-left" src="<?= base_url('assets') ?>/images/coupon-left.svg" alt="right-border" />
                     </div>
-                </div>
-            `;
+                `;
                 couponList.innerHTML += couponBox;
             });
         }
+
+        function displayEmpty() {
+            const couponList = document.getElementById('coupon-list');
+            couponList.innerHTML = `
+            <div class="custom-container">
+                <div class="empty-tab">
+                    <img class="img-fluid empty-cart w-100" src="<?= base_url('assets/images/empty.svg') ?>" alt="empty-cart" />
+                    <h2>Pesanan kamu masih kosong</h2>
+                    <h5 class="mt-3">Silahkan pesan untuk kebutuhan kamu sekarang.</h5>
+                </div>
+            </div>
+        `;
+        }
     </script>
+
 </body>
 
 </html>

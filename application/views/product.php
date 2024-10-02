@@ -47,7 +47,7 @@
 
     .floating-cart {
         position: fixed;
-        bottom: 4px;
+        bottom: 3%;
         width: calc(100% - 40px);
         /* Mengurangi lebar lebih besar untuk memberi jarak */
         background: #fff;
@@ -59,7 +59,7 @@
         /* Memastikan jarak antara elemen */
         align-items: center;
         visibility: hidden;
-        border-radius: 15px;
+        border-radius: 20px;
         transition: all 0.3s ease;
         left: 20px;
         /* Menambahkan jarak dari tepi kiri */
@@ -85,7 +85,6 @@
     .floating-cart .checkout-btn:hover {
         background-color: #e07b1c;
     }
-
 
     span {
         font-size: 16px;
@@ -176,7 +175,7 @@
                         <small style="font-weight: bold;">Produk Belanja</small>
                         <h6 class="pt-2 light-text mb-0" style="border: none; margin-top: 5px;">
                             <span class="dark-text">
-                                <small>Silahkan pesan tanpa perlu antrian</small>
+                                <small>Pesan tanpa perlu antrian</small>
                             </span>
                         </h6>
                     </div>
@@ -191,7 +190,7 @@
     <section class="section-t-space">
         <div class="custom-container">
             <div class="title">
-                <h5 class="mt-0">Produk Belanja Kategori Oil</h5>
+                <h5 class="mt-3"><b>Produk Belanja Oil, Sparepart Engine untuk kamu</b></h5>
                 <!-- <a href="javascript:void(0)" style="font-size: 12px;">Lihat Semua</a> -->
             </div>
             <div class="swiper products">
@@ -202,23 +201,18 @@
         </div>
     </section>
 
-    <section class="section-t-space">
+    <!-- <section class="section-t-space">
         <div class="custom-container">
-            <div class="title">
-                <h5 class="mt-0">Produk Belanja Kategori Lainnya</h5>
-                <!-- <a href="javascript:void(0)" style="font-size: 12px;">Lihat Semua</a> -->
-            </div>
             <div class="swiper products">
                 <div class="swiper-wrapper" id="swiper-wrapper-engine">
-                    <!-- Produk Engine akan dimasukkan di sini -->
                 </div>
             </div>
         </div>
-    </section>
+    </section> -->
 
     <div class="floating-cart" id="floating-cart">
         <div class="total-price" id="total-price">Total: Rp 0</div>
-        <button class="checkout-btn">Checkout</button>
+        <button class="checkout-btn" id="checkout-btn">Checkout</button>
     </div>
 
     <script src="./assets/js/swiper-bundle.min.js"></script>
@@ -229,6 +223,11 @@
     <script>
         const apiURLProductOil = 'http://localhost/zomo/api/get_product_oil';
         const apiURLProductEngine = 'http://localhost/zomo/api/get_product_engine';
+        const checkoutButton = document.getElementById('checkout-btn');
+
+        checkoutButton.addEventListener('click', function() {
+            window.location.href = "<?= base_url('cart') ?>";
+        });
 
         let cart = [];
         let totalPrice = 0;
@@ -268,8 +267,8 @@
                 const productHTML = `
                 <div class="swiper-slide">
                     <div class="product-box product-box-bg">
-                        <a href="details.html" class="product-box-img">
-                            <img class="img-fluid" src="${product.image_url}" />
+                        <a class="product-box-img">
+                            <img class="img-fluid mt-5" src="${product.image_url}" />
                         </a>
                         <div class="product-box-detail">
                             <h5><small>${product.name}</small></h5>
@@ -337,16 +336,41 @@
             }
         }
 
-        function decreaseQuantity(id, price) {
+        async function decreaseQuantity(id, price) {
             const existingProduct = cart.find(item => item.id === id);
             if (existingProduct) {
                 existingProduct.quantity -= 1;
                 if (existingProduct.quantity === 0) {
                     cart = cart.filter(item => item.id !== id);
+                    await removeCartItemFromDatabase(id);
                 }
                 updateTotalPrice();
                 updateCartDisplay();
                 updateQuantityDisplay(id);
+            }
+        }
+
+        async function removeCartItemFromDatabase(product_id) {
+            try {
+                const response = await fetch('http://localhost/zomo/api/remove_cart', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + sessionStorage.getItem('token')
+                    },
+                    body: JSON.stringify({
+                        product_id
+                    })
+                });
+
+                const result = await response.json();
+                if (result.status !== 'success') {
+                    console.error('Failed to remove item from cart:', result.message);
+                } else {
+                    console.log('Item removed from cart successfully:', result);
+                }
+            } catch (error) {
+                console.error('Error removing item from cart:', error);
             }
         }
 
@@ -381,7 +405,60 @@
             document.getElementById(`quantity-${id}`).innerText = existingProduct ? existingProduct.quantity : 0; // Update quantity display
         }
 
-        window.onload = fetchProducts;
+        async function fetchCartItems() {
+            try {
+                const response = await fetch('http://localhost/zomo/api/get_cart', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + sessionStorage.getItem('token')
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    cart = []; // Reset cart terlebih dahulu
+
+                    // Loop melalui data untuk menambahkan setiap produk ke cart
+                    result.data.forEach(item => {
+                        const existingProduct = cart.find(cartItem => cartItem.id == item.product_id);
+                        if (existingProduct) {
+                            // Jika produk sudah ada, tambahkan kuantitas
+                            existingProduct.quantity += parseInt(item.quantity);
+                        } else {
+                            // Jika produk belum ada, tambahkan ke cart
+                            cart.push({
+                                id: parseInt(item.product_id), // Pastikan id adalah integer
+                                name: item.name,
+                                price: parseInt(item.price), // Pastikan harga adalah integer
+                                quantity: parseInt(item.quantity) // Pastikan kuantitas adalah integer
+                            });
+                        }
+                    });
+
+                    updateTotalPrice();
+                    updateCartDisplay();
+                    cart.forEach(item => {
+                        updateQuantityDisplay(item.id); // Perbarui tampilan kuantitas untuk setiap item
+                    });
+                } else {
+                    console.error('Failed to fetch cart items:', result.message);
+                }
+            } catch (error) {
+                console.error('Error fetching cart items:', error);
+            }
+        }
+
+        function updateQuantityDisplay(id) {
+            const existingProduct = cart.find(item => item.id === id);
+            document.getElementById(`quantity-${id}`).innerText = existingProduct ? existingProduct.quantity : 0; // Update quantity display
+        }
+
+        window.onload = async function() {
+            await fetchProducts();
+            await fetchCartItems();
+        };
     </script>
 </body>
 

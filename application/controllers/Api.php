@@ -313,26 +313,21 @@ class Api extends CI_Controller
     public function add_cart_item()
     {
         $input = json_decode(file_get_contents('php://input'), true);
-        // Ambil user_id dari sesi yang sedang login
         $user_id = $this->session->userdata('id');
 
-        // Jika user_id tidak ada di sesi, berikan respons error
-        if (!$user_id) {
-            $response = [
-                'status' => 'error',
-                'message' => 'User not logged in'
-            ];
-            echo json_encode($response);
+        if (!$this->session->userdata('id')) {
+            $this->response([
+                'status' => ApiResponseStatus::ERROR,
+                'message' => 'Unauthorized. Please log in.'
+            ], ApiResponseStatus::HTTP_UNAUTHORIZED);
             return;
         }
 
-        // Periksa apakah input valid
         if (!$input || !isset($input['product_id']) || !isset($input['quantity'])) {
-            $response = [
-                'status' => 'error',
+            $this->response([
+                'status' => ApiResponseStatus::ERROR,
                 'message' => 'Product ID or quantity is missing'
-            ];
-            echo json_encode($response);
+            ], ApiResponseStatus::HTTP_BAD_REQUEST);
             return;
         }
 
@@ -350,6 +345,169 @@ class Api extends CI_Controller
             $this->response([
                 'status' => ApiResponseStatus::ERROR,
                 'message' => 'Failed to update product cart.'
+            ], ApiResponseStatus::HTTP_BAD_REQUEST);
+        }
+    }
+
+    public function get_cart_items()
+    {
+        $user_id = $this->session->userdata('id');
+
+        if (!$user_id) {
+            $this->response([
+                'status' => ApiResponseStatus::ERROR,
+                'message' => 'Unauthorized. Please log in.'
+            ], ApiResponseStatus::HTTP_UNAUTHORIZED);
+            return;
+        }
+
+        $cart_items = $this->Product_model->get_cart_items($user_id);
+
+        if ($cart_items) {
+            $this->response([
+                'status' => ApiResponseStatus::SUCCESS,
+                'data' => $cart_items
+            ], ApiResponseStatus::HTTP_OK);
+        } else {
+            $this->response([
+                'status' => ApiResponseStatus::ERROR,
+                'message' => 'Cart is empty.'
+            ], ApiResponseStatus::HTTP_OK);
+        }
+    }
+
+    public function save_order()
+    {
+        $user_id = $this->session->userdata('id');
+
+        // Check if the user is authenticated
+        if (!$user_id) {
+            $this->response([
+                'status' => ApiResponseStatus::ERROR,
+                'message' => 'Unauthorized. Please log in.'
+            ], ApiResponseStatus::HTTP_UNAUTHORIZED);
+            return;
+        }
+
+        $jsonData = json_decode(file_get_contents('php://input'), true);
+
+        if (!isset($jsonData['cartItems']) || empty($jsonData['cartItems'])) {
+            $this->response([
+                'status' => ApiResponseStatus::ERROR,
+                'message' => 'Cart is empty.'
+            ], ApiResponseStatus::HTTP_OK);
+            return;
+        }
+
+        $this->db->select('transaction_code');
+        $this->db->order_by('id', 'DESC');
+        $this->db->limit(1);
+        $lastOrder = $this->db->get('product_orders')->row();
+
+        if ($lastOrder) {
+            $lastCode = (int) substr($lastOrder->transaction_code, 8);
+            $newCodeNumber = $lastCode + 1;
+        } else {
+            $newCodeNumber = 1;
+        }
+
+        $newTransactionCode = 'TRSC2024' . str_pad($newCodeNumber, 3, '0', STR_PAD_LEFT);
+
+        $totalQty = 0;
+        $totalPrice = 0;
+        $productIds = [];
+
+        foreach ($jsonData['cartItems'] as $item) {
+            if (isset($item['quantity']) && isset($item['price']) && isset($item['productId'])) {
+                if ($item['quantity'] > 0 && $item['price'] > 0 && !empty($item['productId'])) {
+                    $totalQty += $item['quantity'];
+                    $totalPrice += $item['price'] * $item['quantity'];
+                    $productIds[] = $item['productId'];
+                } else {
+                    $this->response([
+                        'status' => ApiResponseStatus::ERROR,
+                        'message' => 'Invalid item data in cart.'
+                    ], ApiResponseStatus::HTTP_BAD_REQUEST);
+                    return;
+                }
+            } else {
+                $this->response([
+                    'status' => ApiResponseStatus::ERROR,
+                    'message' => 'Item data is missing.'
+                ], ApiResponseStatus::HTTP_BAD_REQUEST);
+                return;
+            }
+        }
+
+        $voucherId = isset($jsonData['voucherId']) ? $jsonData['voucherId'] : null;
+        $productIdsString = implode(',', $productIds);
+
+        $orderData = [
+            'product_id' => $productIdsString,
+            'user_id' => $user_id,
+            'transaction_code' => $newTransactionCode,
+            'qty' => $totalQty,
+            'price' => $totalPrice,
+            'voucher_id' => $voucherId,
+            'status' => 'pending',
+        ];
+
+        $this->db->insert('product_orders', $orderData);
+        $this->clear_cart($user_id);
+
+        if ($this->db->affected_rows() > 0) {
+            $this->response([
+                'status' => ApiResponseStatus::SUCCESS,
+                'data' => $orderData
+            ], ApiResponseStatus::HTTP_OK);
+        } else {
+            $this->response([
+                'status' => ApiResponseStatus::ERROR,
+                'message' => 'Failed to save order.'
+            ], ApiResponseStatus::HTTP_OK);
+        }
+    }
+
+    private function clear_cart($user_id)
+    {
+        $this->db->where('user_id', $user_id);
+        $this->db->delete('cart');
+    }
+
+    public function remove_cart()
+    {
+        $input = json_decode(file_get_contents('php://input'), true);
+        $user_id = $this->session->userdata('id');
+
+        if (!$this->session->userdata('id')) {
+            $this->response([
+                'status' => ApiResponseStatus::ERROR,
+                'message' => 'Unauthorized. Please log in.'
+            ], ApiResponseStatus::HTTP_UNAUTHORIZED);
+            return;
+        }
+
+        if (!$input || !isset($input['product_id'])) {
+            $this->response([
+                'status' => ApiResponseStatus::ERROR,
+                'message' => 'Product ID is missing'
+            ], ApiResponseStatus::HTTP_BAD_REQUEST);
+            return;
+        }
+
+        $product_id = $input['product_id'];
+
+        $result = $this->Product_model->delete_cart_item($user_id, $product_id);
+
+        if ($result) {
+            $this->response([
+                'status' => ApiResponseStatus::SUCCESS,
+                'message' => 'Item removed from cart successfully.'
+            ], ApiResponseStatus::HTTP_OK);
+        } else {
+            $this->response([
+                'status' => ApiResponseStatus::ERROR,
+                'message' => 'Failed to remove item from cart.'
             ], ApiResponseStatus::HTTP_BAD_REQUEST);
         }
     }
@@ -428,7 +586,6 @@ class Api extends CI_Controller
 
     public function get_all_orders()
     {
-        // Fetch all orders
         $orders = $this->Service_model->get_all_orders();
 
         if (!empty($orders)) {
@@ -530,6 +687,78 @@ class Api extends CI_Controller
             ], ApiResponseStatus::HTTP_BAD_REQUEST);
         }
     }
+
+    public function create_cart_order()
+    {
+        $user_id = $this->session->userdata('id');
+
+        // Check if the user is logged in
+        if (empty($user_id)) {
+            $this->response([
+                'status' => ApiResponseStatus::ERROR,
+                'message' => 'Unauthorized: Please log in to continue.'
+            ], ApiResponseStatus::HTTP_UNAUTHORIZED);
+            return;
+        }
+
+        $json = $this->input->raw_input_stream;
+        $data = json_decode($json, true);
+
+        // Validate cart data
+        if (empty($data['cartItems'])) {
+            $this->response([
+                'status' => ApiResponseStatus::ERROR,
+                'message' => 'Cart items are required.'
+            ], ApiResponseStatus::HTTP_BAD_REQUEST);
+            return;
+        }
+
+        // Calculate total
+        $total = 0;
+        foreach ($data['cartItems'] as $item) {
+            $total += $item['quantity'] * $this->get_product_price($item['product_id']);
+        }
+
+        // Check if total is zero
+        if ($total <= 0) {
+            $this->response([
+                'status' => ApiResponseStatus::ERROR,
+                'message' => 'Total must be greater than zero.'
+            ], ApiResponseStatus::HTTP_BAD_REQUEST);
+            return;
+        }
+
+        // Create order
+        $order_data = [
+            'user_id' => $user_id,
+            'total' => $total,
+            'created_at' => date('Y-m-d H:i:s'),
+        ];
+
+        $this->db->insert('orders', $order_data);
+        $order_id = $this->db->insert_id();
+
+        // Insert cart items into order_items table
+        foreach ($data['cart_items'] as $item) {
+            $order_item_data = [
+                'order_id' => $order_id,
+                'product_id' => $item['product_id'],
+                'quantity' => $item['quantity'],
+                'price' => $this->get_product_price($item['product_id']),
+            ];
+            $this->db->insert('order_items', $order_item_data);
+        }
+
+        $this->response([
+            'status' => ApiResponseStatus::SUCCESS,
+            'message' => 'Order created successfully.',
+            'data' => [
+                'order_id' => $order_id,
+                'total' => $total,
+            ]
+        ], ApiResponseStatus::HTTP_OK);
+    }
+
 
     public function get_orders_product_by_user_id()
     {

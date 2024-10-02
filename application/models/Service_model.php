@@ -33,4 +33,9 @@ class Service_model extends CI_Model
 
         return $query->result_array();
     }
+
+    public function create_order_product($data)
+    {
+        return $this->db->insert('product_orders', $data);
+    }
 }
