@@ -1,6 +1,8 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
+require_once './vendor/midtrans/midtrans-php/Midtrans.php';
+
 class Api extends CI_Controller
 {
     public function __construct()
@@ -391,79 +393,71 @@ class Api extends CI_Controller
 
         $jsonData = json_decode(file_get_contents('php://input'), true);
 
-        if (!isset($jsonData['cartItems']) || empty($jsonData['cartItems'])) {
+        if (!isset($jsonData['cartItems']) || empty($jsonData['cartItems']) || !isset($jsonData['grandTotal'])) {
             $this->response([
                 'status' => ApiResponseStatus::ERROR,
-                'message' => 'Cart is empty.'
+                'message' => 'Cart or total amount is missing.'
             ], ApiResponseStatus::HTTP_OK);
             return;
         }
 
+        // Generate a new transaction code
         $this->db->select('transaction_code');
         $this->db->order_by('id', 'DESC');
         $this->db->limit(1);
         $lastOrder = $this->db->get('product_orders')->row();
 
-        if ($lastOrder) {
-            $lastCode = (int) substr($lastOrder->transaction_code, 8);
-            $newCodeNumber = $lastCode + 1;
-        } else {
-            $newCodeNumber = 1;
-        }
-
+        $newCodeNumber = ($lastOrder) ? (int) substr($lastOrder->transaction_code, 8) + 1 : 1;
         $newTransactionCode = 'TRSC2024' . str_pad($newCodeNumber, 3, '0', STR_PAD_LEFT);
 
-        $totalQty = 0;
-        $totalPrice = 0;
-        $productIds = [];
-
-        foreach ($jsonData['cartItems'] as $item) {
-            if (isset($item['quantity']) && isset($item['price']) && isset($item['productId'])) {
-                if ($item['quantity'] > 0 && $item['price'] > 0 && !empty($item['productId'])) {
-                    $totalQty += $item['quantity'];
-                    $totalPrice += $item['price'] * $item['quantity'];
-                    $productIds[] = $item['productId'];
-                } else {
-                    $this->response([
-                        'status' => ApiResponseStatus::ERROR,
-                        'message' => 'Invalid item data in cart.'
-                    ], ApiResponseStatus::HTTP_BAD_REQUEST);
-                    return;
-                }
-            } else {
-                $this->response([
-                    'status' => ApiResponseStatus::ERROR,
-                    'message' => 'Item data is missing.'
-                ], ApiResponseStatus::HTTP_BAD_REQUEST);
-                return;
-            }
-        }
-
-        $voucherId = isset($jsonData['voucherId']) ? $jsonData['voucherId'] : null;
-        $productIdsString = implode(',', $productIds);
-
+        // Insert order data into the database
         $orderData = [
-            'product_id' => $productIdsString,
             'user_id' => $user_id,
             'transaction_code' => $newTransactionCode,
-            'qty' => $totalQty,
-            'price' => $totalPrice,
-            'voucher_id' => $voucherId,
+            'total_amount' => $jsonData['grandTotal'],
             'status' => 'pending',
+            'created_at' => date('Y-m-d H:i:s')
         ];
 
         $this->db->insert('product_orders', $orderData);
-        $this->clear_cart($user_id);
+        $orderId = $this->db->insert_id();
 
-        if ($this->db->affected_rows() > 0) {
+        // Prepare Midtrans payload
+        $midtransParams = [
+            'transaction_details' => [
+                'order_id' => $newTransactionCode,
+                'gross_amount' => $jsonData['grandTotal']
+            ],
+            'customer_details' => [
+                'user_id' => $user_id,
+                'email' => $this->session->userdata('email'),
+            ],
+            'item_details' => array_map(function ($item) {
+                return [
+                    'id' => $item['productId'],
+                    'price' => $item['price'],
+                    'quantity' => $item['quantity'],
+                    'name' => $item['name']
+                ];
+            }, $jsonData['cartItems']),
+        ];
+
+        // Call Midtrans Snap API to get the payment token
+        \Midtrans\Config::$serverKey = 'SB-Mid-server-42qia_wNgVhj4srRuYmijIBX';
+        \Midtrans\Config::$isProduction = false;
+        \Midtrans\Config::$isSanitized = true;
+        \Midtrans\Config::$is3ds = true;
+
+        try {
+            $snapToken = \Midtrans\Snap::getSnapToken($midtransParams);
             $this->response([
-                'status' => ApiResponseStatus::SUCCESS,
-                'data' => $orderData
+                'status' => 'success',
+                'snap_token' => $snapToken
             ], ApiResponseStatus::HTTP_OK);
-        } else {
+        } catch (Exception $e) {
             $this->response([
                 'status' => ApiResponseStatus::ERROR,
-                'message' => 'Failed to save order.'
+                'message' => $e->getMessage()
             ], ApiResponseStatus::HTTP_OK);
         }
     }

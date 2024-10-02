@@ -155,7 +155,7 @@
                 </div>
                 <h5 class="mt-3 dark-text">Pajak PPN</h5>
                 <h5 class="free">Free</h5>
-                <h6 class="delivery-info light-text mt-2">Save $5 on Delivery fee by ordering above $30</h6>
+                <h6 class="delivery-info light-text mt-2">Tidak ada pajak pembelian</h6>
                 <div class="sub-total pb-3">
                     <h5>Discount</h5>
                     <h5 class="fw-semibold" id="discount">Rp 0</h5>
@@ -173,7 +173,6 @@
         <div class="price-items">
             <h6 id="item-count">Total Belanja</h6>
             <h3 id="total-items">Rp 0</h3>
-
         </div>
         <a class="btn theme-btn pay-btn mt-0" id="payNowBtn">Pay Now</a>
     </div>
@@ -186,7 +185,8 @@
                         <img class="img-fluid confirm-offer for-light" src="<?= base_url('assets/images/success.gif') ?>" alt="success-payment" />
                         <img class="img-fluid confirm-offer for-dark" src="<?= base_url('assets/images/success.gif') ?>" alt="success-payment" />
                         <h2 class="dark-text text-center fw-semibold mt-2">Payment Success</h2>
-                        <h5 class="mt-3 dark-text text-center w-75 mx-auto">Your payment was successful! Just wait for foodfest to arrive at home</h5>
+                        <h5 class="mt-3 dark-text text-center w-75 mx-auto">Your order is successful! Please pick up your items at the store</h5>
+                        <p id="redirectMessage" class="dark-text text-center mt-3"></p>
                     </div>
                 </div>
             </div>
@@ -196,6 +196,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="<?= base_url('assets') ?>/js/bootstrap.bundle.min.js"></script>
     <script src="<?= base_url('assets') ?>/js/script.js"></script>
+    <script type="text/javascript" src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="SB-Mid-client-Hb7HuiZQmIZN_J1M"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -258,7 +259,7 @@
                 const formattedGrandTotal = grandTotal.toLocaleString('id-ID');
 
                 document.querySelector('#subtotal').textContent = `Rp ${formattedSubTotal}`;
-                document.querySelector('#item-count').textContent = `Total Belanja (${itemCount} item)`;
+                document.querySelector('#item-count').textContent = `Total Belanja`;
                 document.querySelector('#discount').textContent = `Rp ${formattedDiscount}`;
                 document.querySelector('#grand-total').textContent = `Rp ${formattedGrandTotal}`;
                 document.querySelector('#total-items').textContent = `Rp ${formattedGrandTotal}`;
@@ -395,6 +396,7 @@
                     voucherId: selectedVoucherId
                 };
 
+                // Send the order data to your server
                 fetch("<?= site_url('api/checkout') ?>", {
                         method: "POST",
                         headers: {
@@ -406,11 +408,33 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.status === 'success') {
-                            $('#success').modal('show');
+                            // Trigger Midtrans Snap payment
+                            snap.pay(data.snap_token, {
+                                onSuccess: function(result) {
+                                    console.log('Payment success:', result);
+                                    // Show success modal and redirect to success page
+                                    $('#success').modal('show');
+                                    let countdown = 5;
+                                    const redirectMessage = document.getElementById('redirectMessage');
+                                    redirectMessage.textContent = `Redirecting in ${countdown} seconds...`;
 
-                            setTimeout(function() {
-                                window.location.href = "<?= site_url('product') ?>";
-                            }, 4000);
+                                    const timer = setInterval(function() {
+                                        countdown--;
+                                        redirectMessage.textContent = `Redirecting in ${countdown} seconds...`;
+
+                                        if (countdown === 0) {
+                                            clearInterval(timer);
+                                            window.location.href = "<?= site_url('product') ?>";
+                                        }
+                                    }, 1000);
+                                },
+                                onPending: function(result) {
+                                    console.log('Payment pending:', result);
+                                },
+                                onError: function(result) {
+                                    console.error('Payment error:', result);
+                                }
+                            });
                         } else {
                             console.error('Error:', data.message);
                         }
